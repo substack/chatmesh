@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ansi-diff-stream": "^1.2.1",
     "duplexify": "^3.5.4",
     "minimist": "^1.2.0",
     "split2": "^2.2.0",
