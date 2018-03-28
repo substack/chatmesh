@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "duplexify": "^3.5.4",
+    "minimist": "^1.2.0",
+    "split2": "^2.2.0",
+    "strftime": "^0.10.0",
+    "to2": "^1.0.0"
+  }
+}
