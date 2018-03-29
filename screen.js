@@ -19,6 +19,10 @@ Screen.prototype.setSize = function (columns, rows) {
 }
 
 Screen.prototype.addLine = function (time, row, key) {
+  if (!time) {
+    var d = new Date()
+    time = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
+  }
   this._lines.push({
     time: time,
     username: row.username,

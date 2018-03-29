@@ -1,13 +1,12 @@
 var minimist = require('minimist')
 var argv = minimist(process.argv.slice(2))
+var Channel = require('./channel')
 
 var catnames = require('cat-names')
 var split = require('split2')
 var to = require('to2')
 var pump = require('pump')
 
-var strftime = require('strftime')
-var randomBytes = require('crypto').randomBytes
 var diff = require('ansi-diff')({
   width: process.stdout.columns,
   height: process.stdout.rows
@@ -47,19 +46,23 @@ var username
 
 open(argv._[0], argv.d, function (err, addr, db) {
   if (!argv._[0]) {
-    var d = new Date
-    var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
-    screen.addLine(utcDate, {message: 'dat://' + db.key.toString('hex')}, '')
+    screen.addLine(null, {message: 'dat://' + db.key.toString('hex')}, '')
     render()
   }
   setInterval(render, 1000)
 
-  username = argv.u || catnames.random()
+  var channel = Channel(db, addr, {username: argv.u || catnames.random()})
+  channel.on('join', function (username) {
+    screen.addLine(null, {message: `${username} joined the channel.`})
+  })
+  channel.on('leave', function (username) {
+    screen.addLine(null, {message: `${username} left the channel.`})
+  })
 
   var seen = {}
   pump(db.createHistoryStream(), to.obj(
     function (row, enc, next) {
-      writeMsg(row, enc, next)
+      writeMsg(row)
       next()
     },
     function (next) {
@@ -75,16 +78,17 @@ open(argv._[0], argv.d, function (err, addr, db) {
       next()
     }
   ))
+
   function writeMsg (row) {
     if (seen[row.key]) return
     seen[row.key] = true
     var m
     if (row.value && (m=/^chat\/([^\/]+)@/.exec(row.key))) {
-      screen.addLine(new Date(m[1]), row.value, row.key)
+      var utcDate = new Date(m[1])
+      screen.addLine(utcDate, row.value, row.key)
       render()
     }
   }
-  require('./swarm.js')(addr, db)
 
   process.stdin.setRawMode(true)
   var line = ''
@@ -132,16 +136,19 @@ open(argv._[0], argv.d, function (err, addr, db) {
       render()
       return next()
     }
-    var message = Buffer.concat(buffers).toString()
+    var line = Buffer.concat(buffers).toString()
     buffers = []
     screen.setInput('')
     screen.cursor = 0
+    if (line === '/users') {
+      var d = new Date
+      var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
+      screen.addLine(utcDate, {message: Object.keys(channel.users).join(' ')}, Infinity)
+      render()
+      return next()
+    }
     render()
-    var d = new Date
-    var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
-    var now = strftime('%F %T', utcDate)
-    var key = 'chat/' + now + '@' + randomBytes(8).toString('hex')
-    db.put(key, {username, message}, function (err) {
+    channel.message(line, function (err) {
       if (err) console.log(err)
       else next()
     })
