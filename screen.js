@@ -18,10 +18,11 @@ Screen.prototype.setSize = function (columns, rows) {
   this.rows = rows
 }
 
-Screen.prototype.addLine = function (time, msg, key) {
+Screen.prototype.addLine = function (time, row, key) {
   this._lines.push({
     time: time,
-    message: msg,
+    username: row.username,
+    message: row.message,
     key: key
   })
 }
@@ -45,6 +46,7 @@ Screen.prototype.render = function () {
     for (var j = 0; j < msg.length; j += c) {
       parts.push({
         time: line.time,
+        username: line.username,
         message: msg.slice(j,j+c),
         continue: j > 0
       })
@@ -65,7 +67,7 @@ Screen.prototype.render = function () {
         str = Array(12).fill().join(' ') + line.message
       } else if (line.time) {
         str = strftime('[%T] ',
-          new Date(line.time-self._tzoffset)) + line.message
+          new Date(line.time-self._tzoffset)) + line.username + ': ' + line.message
       }
       str += Array(Math.max(0,self.columns-str.length)).fill().join(' ')
       return str

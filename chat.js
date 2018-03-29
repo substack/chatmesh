@@ -1,6 +1,7 @@
 var minimist = require('minimist')
 var argv = minimist(process.argv.slice(2))
 
+var catnames = require('cat-names')
 var split = require('split2')
 var to = require('to2')
 var pump = require('pump')
@@ -42,15 +43,18 @@ var codes = [
   { code: Buffer.from([0x1b,0x5b,0x33,0x7e]), name: 'delete' },
   { code: Buffer.from([0x7f]), name: 'backspace' }
 ]
+var username
 
 open(argv._[0], argv.d, function (err, addr, db) {
   if (!argv._[0]) {
     var d = new Date
     var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
-    screen.addLine(utcDate, 'dat://' + db.key.toString('hex'), '')
+    screen.addLine(utcDate, {message: 'dat://' + db.key.toString('hex')}, '')
     render()
   }
   setInterval(render, 1000)
+
+  username = argv.u || catnames.random()
 
   var seen = {}
   pump(db.createHistoryStream(), to.obj(
@@ -128,7 +132,7 @@ open(argv._[0], argv.d, function (err, addr, db) {
       render()
       return next()
     }
-    var line = Buffer.concat(buffers).toString()
+    var message = Buffer.concat(buffers).toString()
     buffers = []
     screen.setInput('')
     screen.cursor = 0
@@ -137,7 +141,7 @@ open(argv._[0], argv.d, function (err, addr, db) {
     var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
     var now = strftime('%F %T', utcDate)
     var key = 'chat/' + now + '@' + randomBytes(8).toString('hex')
-    db.put(key, line, function (err) {
+    db.put(key, {username, message}, function (err) {
       if (err) console.log(err)
       else next()
     })
@@ -149,8 +153,8 @@ function open (href, dbdir, cb) {
   var addr = /^dat:/.test(href)
     ? Buffer(href.replace(/^dat:\/*/,''),'hex') : null
   var db = addr
-    ? hyperdb(dbdir, addr, { sparse: true, valueEncoding: 'utf8' })
-    : hyperdb(dbdir, { sparse: true, valueEncoding: 'utf8' })
+    ? hyperdb(dbdir, addr, { sparse: true, valueEncoding: 'json' })
+    : hyperdb(dbdir, { sparse: true, valueEncoding: 'json' })
   db.ready(function () {
     cb(null, addr || db.key, db)
   })
