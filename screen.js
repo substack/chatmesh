@@ -65,9 +65,13 @@ Screen.prototype.render = function () {
       var str = ''
       if (line.continue) {
         str = Array(12).fill().join(' ') + line.message
+      } else if (line.time && line.username) {
+        str = strftime('[%T] ',
+          new Date(line.time-self._tzoffset))
+            + '<' + line.username + '> ' + line.message
       } else if (line.time) {
         str = strftime('[%T] ',
-          new Date(line.time-self._tzoffset)) + line.username + ': ' + line.message
+          new Date(line.time-self._tzoffset)) + line.message
       }
       str += Array(Math.max(0,self.columns-str.length)).fill().join(' ')
       return str
