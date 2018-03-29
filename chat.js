@@ -1,13 +1,12 @@
 var minimist = require('minimist')
 var argv = minimist(process.argv.slice(2))
+var Mesh = require('./mesh')
 
 var catnames = require('cat-names')
 var split = require('split2')
 var to = require('to2')
 var pump = require('pump')
 
-var strftime = require('strftime')
-var randomBytes = require('crypto').randomBytes
 var diff = require('ansi-diff')({
   width: process.stdout.columns,
   height: process.stdout.rows
@@ -54,7 +53,7 @@ open(argv._[0], argv.d, function (err, addr, db) {
   }
   setInterval(render, 1000)
 
-  username = argv.u || catnames.random()
+  var mesh = Mesh(db, addr, {username: argv.u || catnames.random()})
 
   var seen = {}
   pump(db.createHistoryStream(), to.obj(
@@ -75,6 +74,7 @@ open(argv._[0], argv.d, function (err, addr, db) {
       next()
     }
   ))
+
   function writeMsg (row) {
     if (seen[row.key]) return
     seen[row.key] = true
@@ -84,7 +84,6 @@ open(argv._[0], argv.d, function (err, addr, db) {
       render()
     }
   }
-  require('./swarm.js')(addr, db)
 
   process.stdin.setRawMode(true)
   var line = ''
@@ -132,16 +131,12 @@ open(argv._[0], argv.d, function (err, addr, db) {
       render()
       return next()
     }
-    var message = Buffer.concat(buffers).toString()
+    var line = Buffer.concat(buffers).toString()
     buffers = []
     screen.setInput('')
     screen.cursor = 0
     render()
-    var d = new Date
-    var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
-    var now = strftime('%F %T', utcDate)
-    var key = 'chat/' + now + '@' + randomBytes(8).toString('hex')
-    db.put(key, {username, message}, function (err) {
+    mesh.message(line, function (err) {
       if (err) console.log(err)
       else next()
     })
