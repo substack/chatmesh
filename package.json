@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "ansi-diff": "^1.1.0",
     "ansi-diff-stream": "^1.2.1",
     "cat-names": "^1.0.2",
     "concat-map": "0.0.1",
