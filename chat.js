@@ -149,12 +149,24 @@ open(argv._[0], argv.d, function (err, addr, db) {
 })
 
 function open (href, dbdir, cb) {
+  var json = {
+    encode: function (obj) {
+      return Buffer.from(JSON.stringify(obj))
+    },
+    decode: function (buf) {
+      var str = buf.toString('utf8')
+      try { var obj = JSON.parse(str) }
+      catch (err) { return {} }
+      return obj
+    }
+  }
+
   var hyperdb = require('hyperdb')
   var addr = /^dat:/.test(href)
     ? Buffer(href.replace(/^dat:\/*/,''),'hex') : null
   var db = addr
-    ? hyperdb(dbdir, addr, { sparse: true, valueEncoding: 'json' })
-    : hyperdb(dbdir, { sparse: true, valueEncoding: 'json' })
+    ? hyperdb(dbdir, addr, { sparse: true, valueEncoding: json })
+    : hyperdb(dbdir, { sparse: true, valueEncoding: json })
   db.ready(function () {
     cb(null, addr || db.key, db)
   })

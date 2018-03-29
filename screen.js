@@ -41,6 +41,7 @@ Screen.prototype.render = function () {
   })
   lines = concatMap(lines, function (line) {
     var msg = line.message
+    if (!msg) return []
     var parts = []
     var c = self.columns - 12
     for (var j = 0; j < msg.length; j += c) {
