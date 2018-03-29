@@ -2,9 +2,11 @@
   "dependencies": {
     "ansi-diff-stream": "^1.2.1",
     "concat-map": "0.0.1",
-    "duplexify": "^3.5.4",
+    "datland-swarm-defaults": "^1.0.2",
+    "discovery-swarm": "^5.1.1",
+    "hyperdb": "^3.0.0-1",
     "minimist": "^1.2.0",
-    "nanobus": "^4.3.3",
+    "pump": "^3.0.0",
     "split2": "^2.2.0",
     "strftime": "^0.10.0",
     "to2": "^1.0.0"
