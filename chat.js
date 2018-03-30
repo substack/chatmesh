@@ -1,6 +1,7 @@
 var minimist = require('minimist')
 var argv = minimist(process.argv.slice(2))
-var Channel = require('./channel')
+var Mesh = require('./mesh')
+var Swarm = require('./swarm')
 
 var catnames = require('cat-names')
 var split = require('split2')
@@ -44,19 +45,22 @@ var codes = [
 ]
 var username
 
-open(argv._[0], argv.d, function (err, addr, db) {
+var mesh = Mesh(argv.d, argv._[0], {username: argv.u || catnames.random(), sparse: true})
+
+mesh.db.ready(function (err) {
+  var db = mesh.db
+  var addr = mesh.addr
   if (!argv._[0]) {
     screen.addLine(null, {message: 'dat://' + db.key.toString('hex')}, '')
     render()
   }
   setInterval(render, 1000)
-
-  var channel = Channel(db, addr, {username: argv.u || catnames.random()})
-  channel.on('join', function (username) {
-    screen.addLine(null, {message: `${username} joined the channel.`})
+  var swarm = Swarm(mesh)
+  mesh.on('join', function (username) {
+    screen.addLine(null, {message: `${username} joined the mesh.`})
   })
-  channel.on('leave', function (username) {
-    screen.addLine(null, {message: `${username} left the channel.`})
+  mesh.on('leave', function (username) {
+    screen.addLine(null, {message: `${username} left the mesh.`})
   })
 
   var seen = {}
@@ -77,7 +81,9 @@ open(argv._[0], argv.d, function (err, addr, db) {
       }
       next()
     }
-  ))
+  ), function (err) {
+    if (err) console.error(err)
+  })
 
   function writeMsg (row) {
     if (seen[row.key]) return
@@ -143,40 +149,16 @@ open(argv._[0], argv.d, function (err, addr, db) {
     if (line === '/users') {
       var d = new Date
       var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
-      screen.addLine(utcDate, {message: Object.keys(channel.users).join(' ')}, Infinity)
+      screen.addLine(utcDate, {message: Object.keys(mesh.users).join(' ')}, Infinity)
       render()
       return next()
     }
     render()
-    channel.message(line, function (err) {
+    mesh.message(line, function (err) {
       if (err) console.log(err)
       else next()
     })
   }
 })
-
-function open (href, dbdir, cb) {
-  var json = {
-    encode: function (obj) {
-      return Buffer.from(JSON.stringify(obj))
-    },
-    decode: function (buf) {
-      var str = buf.toString('utf8')
-      try { var obj = JSON.parse(str) }
-      catch (err) { return {} }
-      return obj
-    }
-  }
-
-  var hyperdb = require('hyperdb')
-  var addr = /^dat:/.test(href)
-    ? Buffer(href.replace(/^dat:\/*/,''),'hex') : null
-  var db = addr
-    ? hyperdb(dbdir, addr, { sparse: true, valueEncoding: json })
-    : hyperdb(dbdir, { sparse: true, valueEncoding: json })
-  db.ready(function () {
-    cb(null, addr || db.key, db)
-  })
-}
 
 function exit () { process.exit() }

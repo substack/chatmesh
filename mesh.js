@@ -1,52 +1,53 @@
-var discovery = require('discovery-swarm')
-var swarmDefaults = require('datland-swarm-defaults')
+var hyperdb = require('hyperdb')
 var strftime = require('strftime')
 var randomBytes = require('crypto').randomBytes
 var events = require('events')
 var inherits = require('inherits')
 
-module.exports =  Channel
+module.exports =  Mesh
 
-function Channel (db, addr, opts) {
-  if (!(this instanceof Channel)) return new Channel(db, addr, opts)
+function Mesh (storage, href, opts) {
+  if (!(this instanceof Mesh)) return new Mesh(storage, href, opts)
   if (!opts) opts = {}
   events.EventEmitter.call(this)
   var self = this
 
+  var json = {
+    encode: function (obj) {
+      return Buffer.from(JSON.stringify(obj))
+    },
+    decode: function (buf) {
+      var str = buf.toString('utf8')
+      try { var obj = JSON.parse(str) }
+      catch (err) { return {} }
+      return obj
+    }
+  }
+
   self.username = opts.username || 'anonymous'
-  self._addr = addr
-  self._db = db
+
+  self.addr = /^dat:/.test(href)
+    ? Buffer(href.replace(/^dat:\/*/,''),'hex') : null
+  self.db = self.addr
+    ? hyperdb(storage, self.addr, {valueEncoding: json})
+    : hyperdb(storage, {valueEncoding: json})
+
   self.users = {}
   self.users[opts.username] = new Date()
-  self.swarm = discovery(swarmDefaults({
-    id: db.local.key,
-    stream: function (peer) {
-      var s = db.replicate({
-        live: true,
-        userData: JSON.stringify({
-          key: db.local.key,
-          username: self.username
-        })
-      })
-      return s
-    }
-  }))
-  self.swarm.join(addr.toString('hex'))
-  self.swarm.on('connection', self._onconnection.bind(self))
 }
 
-inherits(Channel, events.EventEmitter)
+inherits(Mesh, events.EventEmitter)
 
-Channel.prototype._onconnection = function (peer) {
+Mesh.prototype.onconnection = function (peer) {
   var self = this
   if (!peer.remoteUserData) return
   var data = JSON.parse(peer.remoteUserData)
   var key = Buffer.from(data.key)
   var username = data.username
-  
-  self._db.authorized(key, function (err, auth) {
+
+  self.db.authorized(key, function (err, auth) {
     if (err) return console.log(err)
-    if (!auth) self._db.authorize(key, function (err) {
+    if (!auth) self.db.authorize(key, function (err) {
       if (err) return console.log(err)
     })
   })
@@ -62,7 +63,7 @@ Channel.prototype._onconnection = function (peer) {
   }
 }
 
-Channel.prototype.message = function (message, opts, done) {
+Mesh.prototype.message = function (message, opts, done) {
   if (typeof opts === 'function') return this.message(message, null, opts)
   if (!opts) opts = {}
   var self = this
@@ -71,5 +72,16 @@ Channel.prototype.message = function (message, opts, done) {
   var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
   var now = strftime('%F %T', utcDate)
   var key = 'chat/' + now + '@' + randomBytes(8).toString('hex')
-  self._db.put(key, {username, message}, done)
+  self.db.put(key, {username, message}, done)
+}
+
+Mesh.prototype.replicate = function () {
+  var self = this
+  return this.db.replicate({
+    live: true,
+    userData: JSON.stringify({
+      key: self.db.local.key,
+      username: self.username
+    })
+  })
 }
