@@ -40,7 +40,7 @@ mesh.db.ready(function () {
           writeMsg(row)
           h.destroy()
         }))
-        var src = mesh.replicate()
+        //var src = mesh.replicate()
       }
       next()
     }
