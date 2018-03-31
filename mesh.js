@@ -41,7 +41,8 @@ inherits(Mesh, events.EventEmitter)
 Mesh.prototype.onconnection = function (peer) {
   var self = this
   if (!peer.remoteUserData) return
-  var data = JSON.parse(peer.remoteUserData)
+  try { var data = JSON.parse(peer.remoteUserData) }
+  catch (err) { return }
   var key = Buffer.from(data.key)
   var username = data.username
 
