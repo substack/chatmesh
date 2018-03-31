@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "ansi-diff-stream": "^1.2.1",
+    "ansi-diff": "^1.2.1",
     "cat-names": "^1.0.2",
     "concat-map": "0.0.1",
     "datland-swarm-defaults": "^1.0.2",
