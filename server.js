@@ -10,44 +10,44 @@ var Mesh = require('./mesh')
 var Swarm = require('./swarm')
 
 var argv = minimist(process.argv.slice(2))
-var mesh = Mesh(argv.d, argv._[0], {username: argv.u || 'bot'})
+var server = http.createServer(function (req, res) {
+  if (req.url === '/bundle.js') {
+    res.setHeader('Content-Type', 'text/html')
+    return fs.createReadStream('bundle.js').pipe(res)
+  }
+  if (req.url !== '/replicate') {
+    res.setHeader('Content-Type', 'text/html')
+    res.statusCode = 200
+    return fs.createReadStream('index.html').pipe(res)
+  }
 
-mesh.db.ready(function (err) {
-  var db = mesh.db
-  var server = http.createServer(function (req, res) {
-    if (req.url === '/bundle.js') {
-      res.setHeader('Content-Type', 'text/html')
-      return fs.createReadStream('bundle.js').pipe(res)
-    }
-    if (req.url.match(/history/)) {
-      res.setHeader('Content-Type', 'application/json')
-      return pump(db.createHistoryStream(), JSONStream.stringify(), res)
-    }
-    if (req.url !== '/replicate') {
-      res.setHeader('Content-Type', 'text/html')
-      res.statusCode = 200
-      return fs.createReadStream('index.html').pipe(res)
-    }
+  res.statusCode = 404
+  res.end('not found')
+})
 
-    res.statusCode = 404
-    res.end('not found')
-  })
+  wsock.createServer({ server , perMessageDeflate: false }, function (socket, req) {
+    if (req.url.match(/replicate/)) {
+      try {
+        // TODO: use dat-encoding lib
+        var addr =  req.url.split('replicate')[1].substring(1)
+      } catch (err) {
+        return socket.destroy('Invalid dat address')
+      }
+      var mesh = Mesh(`${argv.d}/${addr}`, 'dat://' + addr, {username: argv.u || 'bot'})
 
-  Swarm(mesh)
+      mesh.db.ready(function (err) {
+        var src = mesh.replicate()
+        Swarm(mesh)
 
-  wsock.createServer({ server: server , perMessageDeflate: false }, function (socket, req) {
-    if (req.url === '/replicate') {
-      var src = mesh.replicate()
-      pump(src, socket, src, function (err) {
-        if (err) console.log('REPLICATION ERROR:', err)
-        else console.log('REPLICATION: done')
+        pump(src, socket, src, function (err) {
+          if (err) console.log('REPLICATION ERROR:', err)
+          else console.log('REPLICATION: done')
+        })
       })
-    }
-    else stream.destroy(req.url + ' does not match')
+    } else socket.destroy(req.url + ' does not match')
   })
 
 
-  server.listen(8080, function () {
-    console.log('localhost:8080')
-  })
+server.listen(8080, function () {
+  console.log('localhost:8080')
 })
