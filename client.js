@@ -12,7 +12,7 @@ console.log('creating mesh for', addr)
 var mesh = Mesh(function () { return ram() } , 'dat://' + addr, {username: 'web-client', sparse: true})
 
 mesh.db.ready(function () {
-  var ws = websocket(`ws://localhost:8080/replicate`, {
+  var ws = websocket(`ws://localhost:8080/replicate/${addr}`, {
     perMessageDeflate: false
   })
   ws.on('connection', function () {
@@ -23,6 +23,7 @@ mesh.db.ready(function () {
   var src = mesh.replicate()
   pump(src, ws, src, function (err) {
     if (err) return console.error(err)
+    console.log('done replicating')
   })
 
   var messages = document.querySelector('.messages')
