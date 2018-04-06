@@ -48,6 +48,7 @@ Screen.prototype.render = function () {
     if (!msg) return []
     var parts = []
     var c = self.columns - 12
+      - (line.username ? 3 + line.username.length : 0)
     for (var j = 0; j < msg.length; j += c) {
       parts.push({
         time: line.time,
@@ -64,11 +65,13 @@ Screen.prototype.render = function () {
     lines.push({ time: null })
   }
   var last = strftime('[%T] ' + this._input)
-  last += Array(self.columns-last.length).fill().join(' ')
+  last += Array(Math.max(0,self.columns-last.length)).fill().join(' ')
   return '' //'\x1b[1G\x1b[1;m'
     + lines.map(function (line) {
       var str = ''
-      if (line.continue) {
+      if (line.continue && line.username) {
+        str = Array(15+line.username.length).fill().join(' ') + line.message
+      } else if (line.continue) {
         str = Array(12).fill().join(' ') + line.message
       } else if (line.time && line.username) {
         str = strftime('[%T] ',
