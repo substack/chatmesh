@@ -1,6 +1,6 @@
 {
   "name": "chatmesh",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "p2p offline-first IRC",
   "bin": {
     "chatmesh": "cli.js"
