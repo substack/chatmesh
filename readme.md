@@ -33,3 +33,7 @@ To create a bot to ensure scrollback for clients:
 ## Commands
 
   * `/users` : see the list of users you're currently connected with
+
+## License
+
+AGPL

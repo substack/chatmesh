@@ -6,7 +6,7 @@
     "chatmesh": "cli.js"
   },
   "repository": "substack/chatmesh",
-  "license": "GPLv3",
+  "license": "AGPL",
   "dependencies": {
     "ansi-diff": "^1.1.0",
     "cat-names": "^1.0.2",
