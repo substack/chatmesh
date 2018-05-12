@@ -1,4 +1,12 @@
 {
+  "name": "chatmesh",
+  "version": "1.0.0",
+  "description": "p2p offline-first IRC",
+  "bin": {
+    "chatmesh": "node cli.js"
+  },
+  "repository": "substack/chatmesh",
+  "license": "GPLv3",
   "dependencies": {
     "JSONStream": "^1.3.2",
     "ansi-diff": "^1.1.0",
