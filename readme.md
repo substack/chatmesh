@@ -16,7 +16,7 @@ npm install -g chatmesh
 
 To create a chat room:
 
-    `chatmesh -d /tmp/chatdb -u username`
+    chatmesh -d /tmp/chatdb -u username
 
 If you don't supply a username, a random cat name is used.
 
@@ -24,11 +24,11 @@ For each chat, you must supply a different database location (defaults to /tmp/c
 
 To join a chat room:
 
-    `chatmesh -u username -d /tmp/chatdb dat://abcdef0123456789...`
+    chatmesh -u username -d /tmp/chatdb dat://abcdef0123456789...
 
 To create a bot to ensure scrollback for clients:
 
-  `chatmesh --bot -u username -d /tmp/botdb dat://abcdef01234...`
+    chatmesh --bot -u username -d /tmp/botdb dat://abcdef01234...
 
 ## Commands
 
