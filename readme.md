@@ -20,6 +20,8 @@ To create a chat room:
 
 If you don't supply a username, a random cat name is used.
 
+For each chat, you must supply a different database location (defaults to /tmp/chat). 
+
 To join a chat room:
 
     `chatmesh -u username -d /tmp/chatdb dat://abcdef0123456789...`
