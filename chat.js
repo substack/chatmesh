@@ -1,9 +1,8 @@
 var catnames = require('cat-names')
 var to = require('to2')
 var pump = require('pump')
-
-var Mesh = require('./mesh')
-var Swarm = require('./swarm')
+var chatmesh = require('chatmesh-db')
+var swarm = require('chatmesh-db/swarm')
 
 module.exports = function (argv) {
   var diff = require('ansi-diff')({
@@ -42,7 +41,7 @@ module.exports = function (argv) {
     { code: Buffer.from([0x7f]), name: 'backspace' }
   ]
 
-  var mesh = Mesh(argv.d || '/tmp/chat', argv._[0], {username: argv.u || catnames.random(), sparse: true})
+  var mesh = chatmesh(argv.d || '/tmp/chat', argv._[0], {username: argv.u || catnames.random(), sparse: true})
 
   mesh.db.ready(function (err) {
     if (err) exit(err)
@@ -52,7 +51,7 @@ module.exports = function (argv) {
       render()
     }
     setInterval(render, 1000)
-    Swarm(mesh)
+    swarm(mesh)
     mesh.on('join', function (username) {
       screen.addLine(null, {message: `${username} joined the mesh.`})
     })

@@ -10,10 +10,8 @@
   "dependencies": {
     "ansi-diff": "^1.1.0",
     "cat-names": "^1.0.2",
+    "chatmesh-db": "^1.0.0",
     "concat-map": "0.0.1",
-    "dat-swarm-defaults": "^1.0.1",
-    "discovery-swarm": "^5.1.1",
-    "hyperdb": "^3.0.0-1",
     "inherits": "^2.0.3",
     "minimist": "^1.2.0",
     "pump": "^3.0.0",
