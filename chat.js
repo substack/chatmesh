@@ -42,7 +42,7 @@ module.exports = function (argv) {
     { code: Buffer.from([0x7f]), name: 'backspace' }
   ]
 
-  var mesh = Mesh(argv.d, argv._[0], {username: argv.u || catnames.random(), sparse: true})
+  var mesh = Mesh(argv.d || '/tmp/chat', argv._[0], {username: argv.u || catnames.random(), sparse: true})
 
   mesh.db.ready(function (err) {
     if (err) exit(err)
@@ -157,7 +157,7 @@ module.exports = function (argv) {
   })
 
   function exit (err) {
-    console.trace(err)
+    if (err) console.trace(err)
     process.exit()
   }
 }
