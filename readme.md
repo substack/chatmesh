@@ -1,33 +1,35 @@
 ## Chatmesh
 
-to create a chat room:
+Peer-to-peer messenger (like IRC).
 
-    node chat.js -d /tmp/chatdb -u username
+This is a basic terminal client.
 
-to join a chat room:
+For the desktop application, see [chatmesh-desktop](http://github.com/karissa/chatmesh-desktop)
 
-    node chat.js -u username -d /tmp/chatdb dat://abcdef0123456789... 
+Also see the [WIP Websocket experiment](chatmesh-ws](http://github.com/karissa/chatmesh-ws)
 
-if no username supplied, a random cat name is used
+## Usage
 
+```
+npm install -g chatmesh
+```
 
-## Bot
+To create a chat room:
 
-to create a bot to ensure scrollback 
+    `chatmesh -d /tmp/chatdb -u username`
 
-  node bot.js -u username -d /tmp/botdb dat://abcdef01234.... 
+If you don't supply a username, a random cat name is used.
 
+For each chat, you must supply a different database location (defaults to /tmp/chat). 
 
-## Websocket Bridge and Web Client
+To join a chat room:
 
-to create a server with a websocket bridge
+    `chatmesh -u username -d /tmp/chatdb dat://abcdef0123456789...`
 
-  node server.js -u username -d /tmp/server
+To create a bot to ensure scrollback for clients:
 
-navigate to URL/datkey:
+  `chatmesh --bot -u username -d /tmp/botdb dat://abcdef01234...`
 
-  http://localhost:8080/abcdef01234...
+## Commands
 
-
-  
-  
+  * `/users` : see the list of users you're currently connected with

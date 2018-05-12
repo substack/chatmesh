@@ -1,5 +1,5 @@
 var discovery = require('discovery-swarm')
-var swarmDefaults = require('datland-swarm-defaults')
+var swarmDefaults = require('dat-swarm-defaults')
 
 module.exports = function (mesh) {
   var swarm = discovery(swarmDefaults({
