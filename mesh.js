@@ -68,6 +68,7 @@ Mesh.prototype.message = function (message, opts, done) {
   if (typeof opts === 'function') return this.message(message, null, opts)
   if (!opts) opts = {}
   var self = this
+  if (!message) return done()
   var d = opts.date || new Date
   var username = opts.username || self.username
   var utcDate = new Date(d.valueOf() + d.getTimezoneOffset()*60*1000)
