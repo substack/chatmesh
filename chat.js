@@ -104,7 +104,7 @@ module.exports = function (argv) {
       seen[row.key] = true
       var m = new RegExp(`${channel}/messages/.`).exec(row.key)
       if (row.value && m) {
-        var utcDate = new Date(row.value.utcDate)
+        var utcDate = new Date(row.value.date)
         state.messages.push(`[${strftime('%T', new Date(utcDate - _tzoffset))}] <${row.value.username}> ${row.value.message}`)
         bus.emit('render')
       }
