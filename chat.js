@@ -18,9 +18,28 @@ module.exports = function (argv) {
     state.messages = []
     neat.input.on('update', () => neat.render())
     neat.input.on('enter', (line) => {
-      mesh.message(line, function (err) {
-        if (err) console.log(err)
-      })
+      var cmd = line.trim().toLowerCase().split(' ')[0]
+      switch (cmd) {
+        case '/users':
+          state.messages.push(Object.keys(mesh.users).join(' '))
+          neat.render()
+          break
+        case '/nick':
+          var parts = line.split(' ')
+          if (parts.length > 2) {
+            state.messages.push('Error: expected one argument: /nick NICKNAME')
+            neat.render()
+            break
+          }
+          var newUsername = parts[1]
+          mesh.username = newUsername
+          neat.render()
+          break
+        default:
+          mesh.message(line, function (err) {
+            if (err) console.log(err)
+          })
+      }
     })
   })
 
