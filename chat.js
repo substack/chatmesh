@@ -120,7 +120,7 @@ module.exports = function (argv) {
         return `${row}`
       }).join('\n')}
       ${Array(process.stdout.columns).fill().join('_')}
-      [${mesh.username}] ${neat.input.line()}`)
+      <${mesh.username}> ${neat.input.line()}`)
   }
 
   function exit (err) {
