@@ -14,6 +14,7 @@
     "concat-map": "0.0.1",
     "inherits": "^2.0.3",
     "minimist": "^1.2.0",
+    "neat-log": "^2.4.0",
     "pump": "^3.0.0",
     "split2": "^2.2.0",
     "strftime": "^0.10.0",
