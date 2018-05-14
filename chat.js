@@ -13,30 +13,46 @@ module.exports = function (argv) {
   var username = argv.u || catnames.random()
   var neat = neatLog(view, {fullscreen: true, showCursor: true})
   var mesh = chatmesh(argv.d || '/tmp/chat', argv._[0], {username: username, sparse: true})
+  var channel = '#general'
 
   neat.use(function (state, bus) {
     state.messages = []
     neat.input.on('update', () => neat.render())
     neat.input.on('enter', (line) => {
-      var cmd = line.trim().toLowerCase().split(' ')[0]
+      var parts = line.split(' ')
+      var cmd = parts[0].toLowerCase().trim()
       switch (cmd) {
         case '/users':
           state.messages.push(Object.keys(mesh.users).join(' '))
           neat.render()
           break
         case '/nick':
-          var parts = line.split(' ')
-          if (parts.length > 2) {
+          if (parts.length > 2 && parts[1].length > 0) {
             state.messages.push('Error: expected one argument: /nick NICKNAME')
             neat.render()
             break
           }
-          var newUsername = parts[1]
-          mesh.username = newUsername
+          mesh.username = parts[1]
+          neat.render()
+          break
+        case '/channel':
+          if (parts.length > 2 && parts[1].length > 1) {
+            state.messages.push('Error: expected one argument: /channel CHANNEL')
+            neat.render()
+            break
+          }
+          channel = parts[1]
+          state.messages = []
+          neat.render()
+          break
+        case '/help':
+          state.messages.push('/nick NICKNAME     change nickname')
+          state.messages.push('/channel CHANNEL   change channels')
+          state.messages.push('/users             get list of users currently on')
           neat.render()
           break
         default:
-          mesh.message(line, function (err) {
+          mesh.message(channel, line, function (err) {
             if (err) console.log(err)
           })
       }
@@ -86,10 +102,10 @@ module.exports = function (argv) {
     function writeMsg (row) {
       if (seen[row.key]) return
       seen[row.key] = true
-      var m
-      if (row.value && (m=/^chat\/([^\/]+)@/.exec(row.key))) {
-        var utcDate = new Date(m[1])
-        state.messages.push(`[${strftime('%T', new Date(utcDate-_tzoffset))}] <${row.value.username}> ${row.value.message}`)
+      var m = new RegExp(`${channel}/messages/.`).exec(row.key)
+      if (row.value && m) {
+        var utcDate = new Date(row.value.date)
+        state.messages.push(`[${strftime('%T', new Date(utcDate - _tzoffset))}] <${row.value.username}> ${row.value.message}`)
         bus.emit('render')
       }
     }
@@ -112,15 +128,16 @@ module.exports = function (argv) {
     }
 
     return output(`
-      chatMESH
-      Room: ${state.key}
+      chatMESH: type /help for commands
+      ${state.key}
+
 
       ${msgs.map((row) => {
         if (!row) return ''
         return `${row}`
       }).join('\n')}
       ${Array(process.stdout.columns).fill().join('_')}
-      [${mesh.username}] ${neat.input.line()}`)
+      ${channel} <${mesh.username}> ${neat.input.line()}`)
   }
 
   function exit (err) {
