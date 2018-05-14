@@ -45,6 +45,12 @@ module.exports = function (argv) {
           state.messages = []
           neat.render()
           break
+        case '/help':
+          state.messages.push('/nick NICKNAME     change nickname')
+          state.messages.push('/channel CHANNEL   change channels')
+          state.messages.push('/users             get list of users currently on')
+          neat.render()
+          break
         default:
           mesh.message(channel, line, function (err) {
             if (err) console.log(err)
@@ -122,9 +128,9 @@ module.exports = function (argv) {
     }
 
     return output(`
-      chatMESH
+      chatMESH: type /help for commands
       ${state.key}
-      channel: ${channel}
+
 
       ${msgs.map((row) => {
         if (!row) return ''
