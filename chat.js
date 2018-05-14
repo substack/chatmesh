@@ -13,7 +13,7 @@ module.exports = function (argv) {
   var username = argv.u || catnames.random()
   var neat = neatLog(view, {fullscreen: true, showCursor: true})
   var mesh = chatmesh(argv.d || '/tmp/chat', argv._[0], {username: username, sparse: true})
-  var channel = '#default'
+  var channel = '#general'
 
   neat.use(function (state, bus) {
     state.messages = []
