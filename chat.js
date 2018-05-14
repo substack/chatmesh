@@ -5,7 +5,7 @@ var strftime = require('strftime')
 var chatmesh = require('chatmesh-db')
 var swarm = require('chatmesh-db/swarm')
 var neatLog = require('neat-log')
-var output = require('neat-log/output')
+var output = require('./output')
 
 module.exports = function (argv) {
   var seen = {}
@@ -120,8 +120,7 @@ module.exports = function (argv) {
         return `${row}`
       }).join('\n')}
       ${Array(process.stdout.columns).fill().join('_')}
-      ${username} >${neat.input.line()}
-    `)
+      [${mesh.username}] ${neat.input.line()}`)
   }
 
   function exit (err) {
